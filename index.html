@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClipForge AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1020;
+      color: white;
+      padding: 25px;
+    }
+
+    header {
+      max-width: 700px;
+      margin: 30px auto;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 36px;
+      color: #8b9cff;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: auto;
+      background: #171f35;
+      padding: 25px;
+      border-radius: 16px;
+    }
+
+    .upload {
+      border: 2px dashed #6578ff;
+      padding: 35px 15px;
+      text-align: center;
+      border-radius: 12px;
+    }
+
+    input {
+      max-width: 100%;
+      margin-top: 20px;
+    }
+
+    video {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    #status {
+      color: #aebaff;
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      text-align: center;
+      color: #8290aa;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>ClipForge AI</h1>
+    <p>Turn Long Videos Into Short Clips</p>
+  </header>
+
+  <main class="container">
+    <h2>Upload Your Video</h2>
+
+    <div class="upload">
+      <h3>Select Your Video</h3>
+      <p>Upload an MP4 or MOV video</p>
+
+      <input
+        type="file"
+        id="videoInput"
+        accept="video/mp4,video/quicktime"
+      >
+    </div>
+
+    <video id="preview" controls></video>
+
+    <p id="status">Waiting for video upload...</p>
+  </main>
+
+  <footer>
+    ClipForge AI © 2026
+  </footer>
+
+  <script>
+    const input = document.getElementById("videoInput");
+    const preview = document.getElementById("preview");
+    const status = document.getElementById("status");
+
+    let videoURL = null;
+
+    input.addEventListener("change", function() {
+      const file = input.files[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith("video/")) {
+        status.textContent = "Please select a video file.";
+        return;
+      }
+
+      if (videoURL) {
+        URL.revokeObjectURL(videoURL);
+      }
+
+      videoURL = URL.createObjectURL(file);
+
+      preview.src = videoURL;
+      preview.style.display = "block";
+
+      status.textContent = "Video uploaded successfully: " + file.name;
+    });
+  </script>
+
+</body>
+</html>
