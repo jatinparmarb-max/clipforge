@@ -2,134 +2,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ClipForge AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipForge AI</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b1020;
-      color: white;
-      padding: 25px;
-    }
-
-    header {
-      max-width: 700px;
-      margin: 30px auto;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 36px;
-      color: #8b9cff;
-    }
-
-    .container {
-      max-width: 650px;
-      margin: auto;
-      background: #171f35;
-      padding: 25px;
-      border-radius: 16px;
-    }
-
-    .upload {
-      border: 2px dashed #6578ff;
-      padding: 35px 15px;
-      text-align: center;
-      border-radius: 12px;
-    }
-
-    input {
-      max-width: 100%;
-      margin-top: 20px;
-    }
-
-    video {
-      width: 100%;
-      margin-top: 20px;
-      border-radius: 10px;
-      display: none;
-    }
-
-    #status {
-      color: #aebaff;
-      margin-top: 15px;
-      overflow-wrap: anywhere;
-    }
-
-    footer {
-      text-align: center;
-      color: #8290aa;
-      margin-top: 30px;
-    }
-  </style>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#0b1020;
+ color:white;
+ font-family:Arial,sans-serif;
+ padding:20px;
+}
+header{text-align:center;margin:25px 0}
+h1{color:#8797ff;font-size:32px}
+.container{
+ max-width:650px;
+ margin:auto;
+ background:#171f35;
+ padding:20px;
+ border-radius:16px;
+}
+.upload{
+ border:2px dashed #7185ff;
+ border-radius:12px;
+ padding:25px;
+ text-align:center;
+}
+input{max-width:100%;margin:12px 0}
+video{width:100%;margin-top:20px;border-radius:10px}
+.controls{margin-top:20px}
+.controls input{
+ width:100%;
+ padding:12px;
+ background:#26334d;
+ color:white;
+ border:1px solid #52658a;
+ border-radius:8px;
+}
+button{
+ width:100%;
+ padding:15px;
+ margin-top:12px;
+ border:0;
+ border-radius:9px;
+ background:#697bff;
+ color:white;
+ font-weight:bold;
+ font-size:16px;
+}
+button:disabled{opacity:.5}
+#status{color:#aabaff;overflow-wrap:anywhere}
+a{color:#9cafff}
+footer{text-align:center;color:#8290aa;margin:25px}
+</style>
 </head>
 
 <body>
 
-  <header>
-    <h1>ClipForge AI</h1>
-    <p>Turn Long Videos Into Short Clips</p>
-  </header>
+<header>
+<h1>ClipForge AI</h1>
+<p>Turn Long Videos Into Short Clips</p>
+</header>
 
-  <main class="container">
-    <h2>Upload Your Video</h2>
+<main class="container">
 
-    <div class="upload">
-      <h3>Select Your Video</h3>
-      <p>Upload an MP4 or MOV video</p>
+<h2>Upload Your Video</h2>
 
-      <input
-        type="file"
-        id="videoInput"
-        accept="video/mp4,video/quicktime"
-      >
-    </div>
+<div class="upload">
+<p>Select your video</p>
+<input type="file" id="videoInput" accept="video/*">
+</div>
 
-    <video id="preview" controls></video>
+<video id="preview" controls hidden></video>
 
-    <p id="status">Waiting for video upload...</p>
-  </main>
+<div class="controls">
 
-  <footer>
-    ClipForge AI © 2026
-  </footer>
+<h3>Clip Settings</h3>
 
-  <script>
-    const input = document.getElementById("videoInput");
-    const preview = document.getElementById("preview");
-    const status = document.getElementById("status");
+<label>Start Time (seconds)</label>
+<input type="number" id="start" value="0" min="0" step="0.1">
 
-    let videoURL = null;
+<label>End Time (seconds)</label>
+<input type="number" id="end" value="15" min="0" step="0.1">
 
-    input.addEventListener("change", function() {
-      const file = input.files[0];
+<button id="generate" disabled>Generate Clip</button>
 
-      if (!file) return;
+<p id="status">Waiting for video...</p>
 
-      if (!file.type.startsWith("video/")) {
-        status.textContent = "Please select a video file.";
-        return;
-      }
+<a id="download" hidden>Download Your Clip</a>
 
-      if (videoURL) {
-        URL.revokeObjectURL(videoURL);
-      }
+</div>
+</main>
 
-      videoURL = URL.createObjectURL(file);
+<footer>ClipForge AI © 2026</footer>
 
-      preview.src = videoURL;
-      preview.style.display = "block";
+<script>
+const input = document.getElementById("videoInput");
+const preview = document.getElementById("preview");
+const start = document.getElementById("start");
+const end = document.getElementById("end");
+const generate = document.getElementById("generate");
+const status = document.getElementById("status");
+const download = document.getElementById("download");
 
-      status.textContent = "Video uploaded successfully: " + file.name;
-    });
-  </script>
+let videoURL = null;
+let clipURL = null;
+let selectedFile = null;
+
+input.addEventListener("change", () => {
+ const file = input.files[0];
+ if (!file) return;
+
+ if (!file.type.startsWith("video/")) {
+  status.textContent = "Please select a valid video.";
+  return;
+ }
+
+ selectedFile = file;
+
+ if(videoURL) URL.revokeObjectURL(videoURL);
+ if(clipURL) URL.revokeObjectURL(clipURL);
+
+ videoURL = URL.createObjectURL(file);
+ preview.src = videoURL;
+ preview.hidden = false;
+
+ preview.onloadedmetadata = () => {
+  start.max = preview.duration;
+  end.max = preview.duration;
+  start.value = 0;
+  end.value = Math.min(15, preview.duration);
+  generate.disabled = false;
+  status.textContent = "Video ready! Duration: " +
+   preview.duration.toFixed(1) + " seconds";
+ };
+});
+
+generate.addEventListener("click", async () => {
+ if (!selectedFile) return;
+
+ const s = Number(start.value);
+ const e = Number(end.value);
+
+ if (!Number.isFinite(s) || !Number.isFinite(e) ||
+     s < 0 || e <= s || e > preview.duration) {
+  status.textContent = "Please enter valid start and end times.";
+  return;
+ }
+
+ if (!window.MediaRecorder ||
+     !preview.captureStream ||
+     !window.MediaRecorder.isTypeSupported("video/webm")) {
+  status.textContent =
+   "This browser does not support browser-based clip recording.";
+  return;
+ }
+
+ generate.disabled = true;
+ download.hidden = true;
+ status.textContent = "Generating clip... Please wait.";
+
+ try {
+  preview.pause();
+  preview.currentTime = s;
+
+  await new Promise((resolve, reject) => {
+   preview.onseeked = resolve;
+   preview.onerror = reject;
+  });
+
+  const stream = preview.captureStream();
+  const chunks = [];
+
+  const recorder = new MediaRecorder(stream, {
+   mimeType: "video/webm"
+  });
+
+  recorder.ondataavailable = event => {
+   if (event.data.size > 0) chunks.push(event.data);
+  };
+
+  const recordingDone = new Promise(resolve => {
+   recorder.onstop = resolve;
+  });
+
+  recorder.start();
+  await preview.play();
+
+  await new Promise(resolve => {
+   const check = () => {
+    if (preview.currentTime >= e || preview.ended) {
+     preview.pause();
+     resolve();
+    } else {
+     requestAnimationFrame(check);
+    }
+   };
+   check();
+  });
+
+  recorder.stop();
+  await recordingDone;
+
+  if (clipURL) URL.revokeObjectURL(clipURL);
+
+  const blob = new Blob(chunks, {type:"video/webm"});
+  clipURL = URL.createObjectURL(blob);
+
+  download.href = clipURL;
+  download.download = "clipforge-clip.webm";
+  download.textContent = "Download Your Clip";
+  download.hidden = false;
+
+  status.textContent = "Clip generated successfully!";
+ } catch(error) {
+  status.textContent = "Error: " + error.message;
+ } finally {
+  generate.disabled = false;
+ }
+});
+</script>
 
 </body>
 </html>
