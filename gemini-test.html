@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClipForge Gemini Test</title>
+<style>
+body {
+  background: #0b1020;
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+}
+.container {
+  max-width: 650px;
+  margin: 25px auto;
+  background: #171f35;
+  padding: 20px;
+  border-radius: 14px;
+}
+h1 { color: #8797ff; }
+textarea, input, select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  margin: 8px 0 18px;
+  border-radius: 8px;
+  border: 1px solid #52658a;
+  background: #26334d;
+  color: white;
+}
+textarea { min-height: 180px; }
+button {
+  width: 100%;
+  padding: 15px;
+  background: #697bff;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #10182b;
+  padding: 12px;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>ClipForge AI</h1>
+  <h2>Gemini Connection Test</h2>
+
+  <label>Video duration (seconds)</label>
+  <input id="duration" type="number" value="120" min="1">
+
+  <label>Video category</label>
+  <select id="category">
+    <option value="podcast">Podcast</option>
+    <option value="gaming">Gaming</option>
+    <option value="interview">Interview</option>
+    <option value="youtube">YouTube</option>
+    <option value="educational">Educational</option>
+  </select>
+
+  <label>Transcript with timestamps</label>
+  <textarea id="transcript">[00:00] Welcome to our video. Today we are discussing artificial intelligence.
+[00:15] Most people think AI is only about robots, but that is not true.
+[00:30] AI can help students learn difficult subjects and understand complex topics.
+[00:45] Here is the surprising part: AI can also help small businesses save time.
+[01:00] But AI is not perfect. Always check important information before trusting it.
+[01:15] That is why learning how to use AI properly is important.</textarea>
+
+  <button id="testButton">Analyze with Gemini</button>
+
+  <h3>Result</h3>
+  <p id="status">Ready to test.</p>
+  <pre id="result">No results yet.</pre>
+</div>
+
+<script>
+const WORKER_URL =
+  "https://clipforge-qpi.jatinparmar10044.workers.dev/analyze";
+
+const button = document.getElementById("testButton");
+const status = document.getElementById("status");
+const result = document.getElementById("result");
+
+button.addEventListener("click", async () => {
+  const transcript =
+    document.getElementById("transcript").value.trim();
+
+  const videoDuration =
+    Number(document.getElementById("duration").value);
+
+  const contentType =
+    document.getElementById("category").value;
+
+  if (transcript.length < 20) {
+    status.textContent = "Please enter a longer transcript.";
+    return;
+  }
+
+  if (!Number.isFinite(videoDuration) || videoDuration <= 0) {
+    status.textContent = "Enter a valid video duration.";
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "Gemini is analyzing...";
+  result.textContent = "Please wait...";
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        transcript,
+        videoDuration,
+        contentType
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.details || data.error || "Request failed");
+    }
+
+    status.textContent =
+      "Analysis successful! Clips found: " + data.clips.length;
+
+    result.textContent = JSON.stringify(data, null, 2);
+
+  } catch (error) {
+    status.textContent = "Connection or API error";
+    result.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+  </html>
